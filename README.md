@@ -28,7 +28,7 @@ The following library functions are available:
 
 This project was designed for cross-compliation. Compile your toolchain according to https://docs.onion.io/omega2-docs/cross-compiling.html, **change the paths** in the `Makefile` (`TOOLCHAIN_ROOT_DIR`) and do a `make all`. Optionally, `make upload` will attempt to use `sshpass` with `scp` to transfer the compiled binary to your Omega Onion2 system. Simply change the IP address and the password if you whish to use this feature.
 
-For a successful compilation, you need the `omega_includes` and `omega_libraries` folder somewhere on your computer. You can download them at [todo](https://todo.com/). This folder basically includes the `libonionspi`, `liboniondebug` and `libugpio` library and include files. Change the path in the `Makefile` accordingly.
+For a successful compilation, you need the `omega_includes` and `omega_libs` folder somewhere on your computer. You can download them [here](https://github.com/gamer-cndg/omega2-libs)). This folder basically includes the `libonionspi`, `liboniondebug` and `libugpio` library and include files. Change the path in the `Makefile` accordingly.
 
 After executing `make all`, the library file `libili9225.so` and a executable file `displayTest` will be created. If you wish to to use the dynamic library in your own project, you have to:
 1. set the include path to where the `ILI9225.h` is (`-I somedir`)
