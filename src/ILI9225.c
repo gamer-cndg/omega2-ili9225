@@ -314,16 +314,80 @@ void ILI9225_CopyExternalFrameBuffer(uint8_t* framebuf, size_t framebufLen) {
 	//we have to write it in chunks...
 	//max length seems to be 16 bytes... / 8 color values
 	//transfer blockwise
-	const int block_size = 16;
-	for(int i=0; i <  (int)(framebufLen - block_size); i += block_size) {
+	const int block_size = 4096;
+	int remainingBytes = framebufLen;
+
+	for(int i=0; i < (int)(framebufLen); i += block_size) {
 			uint8_t currTX[block_size];
-			uint16_t* pTX = (uint16_t*) currTX;
-			memcpy(currTX, (uint8_t*)framebuf + i, block_size);
-			//correct endianess in each one of them...
-			for(int j=0; j < block_size/2; j++) {
-				pTX[j] = ((pTX[j] & 0xff) << 8) |  (pTX[j] >> 8);
+			uint8_t* currFB = framebuf + i;
+			//Copy framebuffer *and* correct endianess in one go
+			int transfersize = remainingBytes < block_size ? remainingBytes : block_size;
+
+			for(int j=0; j < transfersize; j+=2) {
+				currTX[j] = currFB[j+1];
+				currTX[j+1] = currFB[j];
 			}
-			spiTransfer(&params, currTX, dummyRXBuf, block_size);
+			spiTransfer(&params, currTX, dummyRXBuf, transfersize);
+			remainingBytes -= transfersize;
+
+			//write each color byte one-by-one
+			/*int err = spiTransfer(&params, currTX, dummyRXBuf, block_size);
+				if(err == EXIT_FAILURE)
+					printf("[-] SPI transfer failed!\n");*/
+	}
+	//onionSetVerbosity(ONION_VERBOSITY_EXTRA_VERBOSE);
+	//lower line again
+	ILI9225_SetOutputGPIO(savedRS, 0);
+}
+
+/* Copies an external framebuffer of specified height and width at a starting position to the display */
+void ILI9225_CopyExternalFrameBuffer2(const uint8_t* framebuf, int width, int height, int startX, int startY) {
+	if(width < 0 || height < 0 || startX < 0 || startY < 0 ) {
+		printf("Not accepting negative dimensions\n");
+		return;
+	}
+
+	if(startX + width > ILI9225_LCD_WIDTH || startY + height > ILI9225_LCD_HEIGHT) {
+		printf("Given framebuffer is out of bounds of the display\n");
+		return;
+	}
+
+	ILI9225_SetWindow(startX, startY, startX + width - 1, startY + height - 1);
+	// d/c line must be 1
+	ILI9225_SetOutputGPIO(savedRS, 1);
+	//usleep(500);
+	//write our entire framebuffer
+	//the SPI driver doesn't seem to like it when we give it our entire ~72 kByte buffer..
+	//we have to write it in chunks...
+	//max length seems to be 16 bytes... / 8 color values
+	//transfer blockwise
+	const int block_size = 4096;
+	int framebufLen = width * height * 2; //RGB666 format
+	int remainingBytes = framebufLen;
+	uint8_t currTX[block_size];
+	for(int i=0; i <  (int)(framebufLen); i += block_size) {
+			const uint8_t* currFB = framebuf + i;
+			int transfersize = remainingBytes < block_size ? remainingBytes : block_size;
+
+			//Copy framebuffer *and* correct endianess in one go
+			for(int j=0; j < transfersize; j+=2) {
+				currTX[j] = currFB[j+1];
+				currTX[j+1] = currFB[j];
+			}
+
+			//Adjust address window for every write
+			//const int bytesPerLine = width * 2;
+			//int currY = startY + (i / (bytesPerLine));
+			//int currX = startX + (i % bytesPerLine);
+			//int pixelPerTransfer = block_size / 2;
+			//ILI9225_SetWindow(currX, currY, currY + 1, startY + height - 1);
+
+			spiTransfer(&params, currTX, dummyRXBuf, transfersize);
+
+			//usleep(100 * 1000);
+
+			remainingBytes -= transfersize;
+			//printf("Transfered %d bytes i = %d remaining = %d\n", transfersize, i, remainingBytes);
 			//write each color byte one-by-one
 			/*int err = spiTransfer(&params, currTX, dummyRXBuf, block_size);
 				if(err == EXIT_FAILURE)

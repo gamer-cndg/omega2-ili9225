@@ -77,6 +77,7 @@ void ILI9225_DoDemo();
 /* gets a pointer to the raw framebuffer. use with causion. */
 uint8_t* ILI9225_GetRawFrameBuffer();
 void ILI9225_CopyExternalFrameBuffer(uint8_t* framebuf, size_t framebufLen);
+void ILI9225_CopyExternalFrameBuffer2(const uint8_t* framebuf, int width, int height, int startX, int startY);
 
 /* de-initialize it*/
 void ILI9225_DeInit();

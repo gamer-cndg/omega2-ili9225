@@ -34,9 +34,9 @@ program:
 all: | library program
 
 upload: | all
-	sshpass -p "onioneer" scp $(EXECUTABLE) root@192.168.1.131:/root/.
+	sshpass -p "onioneer" scp $(EXECUTABLE) root@192.168.1.202:/root/.
 	#upload .so file to /usr/lib so that lib is found by executable
-	sshpass -p "onioneer" scp $(LIB_NAME) root@192.168.1.131:/usr/lib/.
+	sshpass -p "onioneer" scp $(LIB_NAME) root@192.168.1.202:/usr/lib/.
 
 clean:
 	rm -rf $(EXECUTABLE)
