@@ -362,7 +362,7 @@ void ILI9225_CopyExternalFrameBuffer2(const uint8_t* framebuf, int width, int he
 	//max length seems to be 16 bytes... / 8 color values
 	//transfer blockwise
 	const int block_size = 4096;
-	int framebufLen = width * height * 2; //RGB666 format
+	int framebufLen = width * height * 2; //RGB565 format (2 bytes per pixel)
 	int remainingBytes = framebufLen;
 	uint8_t currTX[block_size];
 	for(int i=0; i <  (int)(framebufLen); i += block_size) {
